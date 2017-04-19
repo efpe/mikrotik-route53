@@ -1,6 +1,8 @@
 # mikrotik-route53
 Mikrotik DNS update script for route53 with external script
 
+Disclaimer: I know it's shitty code but it works for me! Send a PR if you find a bug.
+
 ## Add the script to your router
 ```
 /system scheduler add interval=1m name=R53DNS on-event="/system script run r53dns\r\n" policy=ftp,reboot,read,write,policy,test,password,sniff,sensitive

@@ -25,7 +25,7 @@
 :global ddnsip [ /ip address get [/ip address find interface=$ddnsinterface ] address ]
 
 :for i from=( [:len $ddnsip] - 1) to=0 do={
-  :if ( [:pick $ddnsip $i] = "/") do={ 
+  :if ( [:pick $ddnsip $i] = "/") do={
     :set ddnsip [:pick $ddnsip 0 $i]
   } 
 }
