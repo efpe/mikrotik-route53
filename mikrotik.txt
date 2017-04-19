@@ -1,0 +1,45 @@
+# This will find your default gateway and send a GET request to the remote host
+# Do not forget to change the url local variable!
+# Part of this script came from wiki.mikrotik.com
+
+:global ddnsip
+:global ddnslastip
+
+:if ([ :typeof $ddnslastip ] = nil ) do={ :global ddnslastip "0" }
+
+:global ddnsinterface
+:global ddnssystem ("mt-" . [/system package get system version] )
+
+# Define Local Variables
+:local int
+
+# Loop thru interfaces and look for ones containing
+# default gateways without routing-marks
+:foreach int in=[/ip route find dst-address=0.0.0.0/0 active=yes ] do={
+  :if ([:typeof [/ip route get $int routing-mark ]] != str ) do={
+     :global ddnsinterface [/ip route get $int vrf-interface]
+  }
+}
+
+# Grab the current IP address on that interface.
+:global ddnsip [ /ip address get [/ip address find interface=$ddnsinterface ] address ]
+
+:for i from=( [:len $ddnsip] - 1) to=0 do={
+  :if ( [:pick $ddnsip $i] = "/") do={ 
+    :set ddnsip [:pick $ddnsip 0 $i]
+  } 
+}
+
+# Did we get an IP address to compare?
+:if ([ :typeof $ddnsip ] = nil ) do={
+   :log info ("DynDNS: No ip address present on " . $ddnsinterface . ", please check.")
+} else={
+  :if ($ddnsip != $ddnslastip) do={
+    :log info ("DynDNS: Sending UPDATE (" . $ddnsip . ")!")
+    :local url "http://192.0.2.100:8080/\3Fip=$ddnsip"
+    :log info ("URL: " . $url)
+    /tool fetch url=$url keep-result=no
+    :global ddnslastip $ddnsip
+  }
+}
+
